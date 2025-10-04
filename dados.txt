@@ -1,0 +1,8 @@
+# qnt de alunos
+3
+
+# pensei em usar a estrutura do arquivo com
+# id | nota | falta
+1 10 12
+2 9.5 5
+3 8 0
