@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include "portal.h"
+#include "logger.h"
 
 #define TECLADO "TECLADO"
 #define ARQUIVO "ARQUIVO"
@@ -12,6 +13,8 @@
 
 int POS_THREADS = 2;
 int QNT_THREADS = 0;
+Portal portal;
+Logger logger;
 
 typedef struct {
     int qtd_alunos;
@@ -25,6 +28,8 @@ void validaArquivo(const char* local);
 void entradaDados(int argc, char** argv);
 
 int main(int argc, char** argv){
+    logger_init(&logger);
+    logger_log(&logger, "Iniciando execucao...");
     entradaDados(argc,argv);
     return 0;
 }
@@ -43,14 +48,27 @@ void entradaDados(int argc,char** argv){
         printf("ENTRADA VIA ARQUIVO ESCOLHIDO\n");
         validaArquivo(argv[2]);
         DadosLidos *d = entradaArquivo(argv[2]);
-        //so pra ver se ta funcionando
-        for(int i = 0; i < d->qtd_alunos; i++){
-            printf("Aluno [%d]: ID=%d | Nota=%.1f | Faltas=%d\n", 
-                   i,
-                   d->alunos[i].id_aluno, 
-                   d->alunos[i].nota, 
-                   d->alunos[i].faltas);
+        logger_log(&logger, "\n--- Alunos carregados do arquivo (%d) ---", d->qtd_alunos);
+        for(int i=0;i<d->qtd_alunos;i++){
+            logger_log(&logger, 
+                       "Aluno [%d]: ID=%d | Nota=%.2f | Faltas=%d", 
+                       i,
+                       d->alunos[i].id_aluno, 
+                       d->alunos[i].nota, 
+                       d->alunos[i].faltas);
         }
+        logger_log(&logger, "------------------------------------------");
+        if(portal_init(&portal, d->alunos, d->qtd_alunos, &logger)){
+            logger_log(&logger, "[Portal] Portal iniciado com sucesso!");
+        }else{
+            logger_log(&logger, "[Erro] Falha ao iniciar o portal!");
+            free(d->alunos);
+            free(d);
+            logger_close(&logger);
+            exit(1);
+        }
+        free(d->alunos);
+        free(d);
         POS_THREADS++;
     }else if(!strcmp(argv[ENTRADA], ALEATORIO)){
         printf("ENTRADA ALEATORIA ESCOLHIDA\n");
