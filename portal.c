@@ -1,75 +1,78 @@
-/**
- * portal.c
- * ------------------------------------------
- * Implementação da versão 1 do Portal do Aluno
- * (leitores-escritores sem prioridade).
- */
-#include "portal.h"
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
+#include "portal.h"
 
-/* Inicializa o portal */
 int portal_init(Portal *p, RegistroAluno *alunos, int qtd, Logger *lg){
-    p->alunos = malloc(sizeof(RegistroAluno)*qtd);
-    if(!p->alunos) return 0;
+    if (!p || !alunos || qtd <= 0) return 0;
 
-    for(int i=0; i<qtd; i++)
-        p->alunos[i] = alunos[i];
-
+    p->alunos = alunos;
     p->qtd_alunos = qtd;
-    p->leitores = 0;
 
-    pthread_mutex_init(&p->mutex_leitores, NULL);
-    sem_init(&p->recurso, 0, 1);
+    p->leitores_ativos = 0;
+    pthread_mutex_init(&p->mtx_leitores, NULL);
+
+    // writers-first
+    sem_init(&p->turnstile, 0, 1);
+    sem_init(&p->recurso,   0, 1);
+
     p->logger = lg;
     return 1;
 }
 
-/* Libera recursos do portal */
 void portal_close(Portal *p){
-    free(p->alunos);
-    pthread_mutex_destroy(&p->mutex_leitores);
+    if (!p) return;
+    pthread_mutex_destroy(&p->mtx_leitores);
+    sem_destroy(&p->turnstile);
     sem_destroy(&p->recurso);
 }
 
-/* Leitura de um registro */
-void portal_ler(Portal *p, int idx){
-    // Entrada da seção crítica
-    pthread_mutex_lock(&p->mutex_leitores);
-    p->leitores++;
-    if(p->leitores == 1)
-        sem_wait(&p->recurso); // primeiro leitor bloqueia escritores
-    pthread_mutex_unlock(&p->mutex_leitores);
+/* ---------------- Leitor (Aluno) ---------------- */
+void portal_ler(Portal *p, int id_thread, int idx_aluno){
+    if (!p || idx_aluno < 0 || idx_aluno >= p->qtd_alunos) return;
 
-    // Seção crítica (leitura)
-    logger_log(p->logger, "[Leitor] id=%d nota=%.1f faltas=%d",
-               p->alunos[idx].id_aluno,
-               p->alunos[idx].nota,
-               p->alunos[idx].faltas);
-    usleep(100000); // simula tempo de leitura
+    // respeita a catraca (se escritor quiser escrever, segura novos leitores)
+    sem_wait(&p->turnstile);
+    sem_post(&p->turnstile);
 
-    // Saída da seção crítica
-    pthread_mutex_lock(&p->mutex_leitores);
-    p->leitores--;
-    if(p->leitores == 0)
-        sem_post(&p->recurso); // último leitor libera escritores
-    pthread_mutex_unlock(&p->mutex_leitores);
+    // primeiro/último leitor bloqueia/libera escritores no recurso
+    pthread_mutex_lock(&p->mtx_leitores);
+    p->leitores_ativos++;
+    if (p->leitores_ativos == 1)
+        sem_wait(&p->recurso);
+    pthread_mutex_unlock(&p->mtx_leitores);
+
+    // --- região crítica (N leitores em paralelo) ---
+    RegistroAluno r = p->alunos[idx_aluno];
+    logger_log(p->logger, "[L-%02d] leu RA=%d  nota=%.1f  faltas=%d",
+               id_thread, r.id_aluno, r.nota, r.faltas);
+    // ------------------------------------------------
+
+    pthread_mutex_lock(&p->mtx_leitores);
+    p->leitores_ativos--;
+    if (p->leitores_ativos == 0)
+        sem_post(&p->recurso);
+    pthread_mutex_unlock(&p->mtx_leitores);
 }
 
-/* Escrita de um registro */
-void portal_escrever(Portal *p, int idx, float nova_nota, int novas_faltas){
-    // Escritor precisa de exclusividade
+/* ---------------- Escritor (Professor) ---------------- */
+void portal_escrever(Portal *p, int id_thread, int idx_aluno, float nova_nota, int delta_faltas){
+    if (!p || idx_aluno < 0 || idx_aluno >= p->qtd_alunos) return;
+
+    // escritor fecha a catraca antes do recurso: prioridade para escritores
+    sem_wait(&p->turnstile);
     sem_wait(&p->recurso);
 
-    // Seção crítica (escrita)
-    p->alunos[idx].nota = nova_nota;
-    p->alunos[idx].faltas = novas_faltas;
-    logger_log(p->logger, "[Escritor] Atualizou id=%d nova_nota=%.1f faltas=%d",
-               p->alunos[idx].id_aluno,
-               nova_nota,
-               novas_faltas);
-    usleep(150000); // simula tempo de escrita
+    // --- região crítica (exclusiva) ---
+    if (nova_nota >= 0.0f)  p->alunos[idx_aluno].nota   = nova_nota;
+    if (delta_faltas != 0)  p->alunos[idx_aluno].faltas += delta_faltas;
+
+    logger_log(p->logger, "[E-%02d] escreveu RA=%d  nova_nota=%.1f  delta_faltas=%d",
+               id_thread,
+               p->alunos[idx_aluno].id_aluno,
+               p->alunos[idx_aluno].nota,
+               delta_faltas);
+    // ----------------------------------
 
     sem_post(&p->recurso);
+    sem_post(&p->turnstile);
 }

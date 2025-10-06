@@ -1,13 +1,3 @@
-/**
- * portal.h
- * ------------------------------------------
- * TAD Portal do Aluno (versão 1 - sem prioridade).
- *
- * Implementa o problema clássico dos leitores-escritores:
- * - Vários leitores podem acessar simultaneamente.
- * - Escritores têm exclusividade de acesso.
- *
- */
 #ifndef PORTAL_H
 #define PORTAL_H
 
@@ -15,35 +5,33 @@
 #include <semaphore.h>
 #include "logger.h"
 
-/* Estrutura que representa um aluno */
+/* Registro do aluno */
 typedef struct {
-    int id_aluno;   // Identificador do aluno
-    float nota;     // Nota do aluno
-    int faltas;     // Número de faltas
+    int   id_aluno;
+    float nota;
+    int   faltas;
 } RegistroAluno;
 
-/* Estrutura principal do Portal */
+/* Portal com controle de concorrência (prioridade para escritores) */
 typedef struct {
-    RegistroAluno *alunos;       // Vetor de registros
-    int qtd_alunos;              // Quantidade de alunos
+    RegistroAluno *alunos;
+    int qtd_alunos;
 
-    int leitores;                // Contador de leitores ativos
-    pthread_mutex_t mutex_leitores; // Protege contador de leitores
-    sem_t recurso;               // Controla acesso exclusivo (diário)
+    // Controle dos leitores
+    int leitores_ativos;
+    pthread_mutex_t mtx_leitores;
 
-    Logger *logger;              // Logger associado
+    // Semáforos do padrão "writers-first"
+    sem_t turnstile;   // catraca: escritor segura para impedir novos leitores
+    sem_t recurso;     // exclusão mútua do "diário" (1 escritor OU N leitores)
+
+    Logger *logger;
 } Portal;
 
-/* Inicializa o portal com vetor de alunos */
-int portal_init(Portal *p, RegistroAluno *alunos, int qtd, Logger *lg);
-
-/* Encerra e libera recursos do portal */
+int  portal_init(Portal *p, RegistroAluno *alunos, int qtd, Logger *lg);
 void portal_close(Portal *p);
 
-/* Operação de leitura (aluno consulta notas/faltas) */
-void portal_ler(Portal *p, int idx);
-
-/* Operação de escrita (professor altera notas/faltas) */
-void portal_escrever(Portal *p, int idx, float nova_nota, int novas_faltas);
+void portal_ler(Portal *p, int id_thread, int idx_aluno);
+void portal_escrever(Portal *p, int id_thread, int idx_aluno, float nova_nota, int delta_faltas);
 
 #endif
