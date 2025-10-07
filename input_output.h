@@ -1,3 +1,6 @@
+#ifndef INPUT_OUTPUT_H
+#define INPUT_OUTPUT_H
+
 #include <string.h>
 #include <time.h>
 #include <stdlib.h>
@@ -21,3 +24,5 @@ DadosLidos* entradaAleatoria();
 void validaArquivo(const char* local);
 DadosLidos* entradaDados(int argc, char** argv,  Portal *portal);
 DadosLidos* entradaArquivo(const char* local);
+
+#endif
