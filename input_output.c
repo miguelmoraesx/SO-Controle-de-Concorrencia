@@ -69,6 +69,11 @@ DadosLidos* entradaDados(int argc,char** argv, Portal *portal){
         printf("NENHUMA ENTRADA VALIDA ESCOLHIDA!\n");
         exit(1);
     }
+    QNT_THREADS = atoi(argv[POS_THREADS]);
+    if (QNT_THREADS <= 0) {
+        logger_log(&logger, "[ERRO] QNT_THREADS deve ser maior que zero.");
+        exit(1);
+    }
     return dados;
 }
 

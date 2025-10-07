@@ -9,11 +9,11 @@
 typedef struct {
     Portal *portal;
     int id_thread;
-    int idx_aluno;
-
-    //esses sao especificos pras escritoras
-    float nova_nota;
-    int delta_faltas;
+    
+    //passa os registros pra guardar (dados iniciais)
+    RegistroAluno *alunos_iniciais;
+    int inicioAluno;
+    int fimAluno;
 }ThreadArgs;
 
 void *thread_escritor(void *arg);

@@ -3,11 +3,16 @@
 void *thread_escritor(void *arg){
     ThreadArgs *args = (ThreadArgs*)arg;
 
-    portal_escrever(args->portal,
+    for(int i = args->inicioAluno; i < args->fimAluno; i++){
+        float nota_inicial = args->alunos_iniciais[i].nota;
+        int faltas_iniciais = args->alunos_iniciais[i].faltas;
+
+        portal_escrever(args->portal,
                     args->id_thread,
-                    args->idx_aluno,
-                    args->nova_nota,
-                    args->delta_faltas);
+                    i,
+                    nota_inicial,
+                    faltas_iniciais);
+    }
 
     free(args);
 
@@ -16,9 +21,11 @@ void *thread_escritor(void *arg){
 void *thread_leitor(void *arg){
 ThreadArgs *args = (ThreadArgs *)arg;
     
-    portal_ler(args->portal, 
-                args->id_thread, 
-                args->idx_aluno);
+    for (int i = args->inicioAluno; i < args->fimAluno; i++) {
+        portal_ler(args->portal, 
+                    args->id_thread, 
+                    i);
+    }
     
     free(args);
     return NULL;
