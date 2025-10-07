@@ -5,6 +5,23 @@ int QNT_THREADS = 0;
 
 Logger logger;
 
+void alocarAlunos(DadosLidos *dados, int qnt, Logger logger){
+    if(qnt <= 0){
+        dados->alunos = NULL;
+        dados->qtd_alunos = 0;
+        return;
+    }
+
+    dados->qtd_alunos = qnt;
+    dados->alunos = (RegistroAluno*) malloc(dados->qtd_alunos * sizeof(RegistroAluno));
+
+    if(dados->alunos == NULL){
+        logger_log(&logger, "[ERRO] alocar memoria para alunos retornou NULL");
+        dados->qtd_alunos = 0;
+        exit(1);
+    }
+}
+
 DadosLidos* entradaDados(int argc,char** argv, Portal *portal){
     logger_init(&logger);
     logger_log(&logger, "Iniciando execucao...");
@@ -103,7 +120,7 @@ DadosLidos* entradaArquivo(const char* local){
     }
 
     //le os registros de alunos
-    dados->alunos = malloc(sizeof(RegistroAluno)* dados->qtd_alunos);
+    alocarAlunos(dados, dados->qtd_alunos, logger);
     if(!dados->alunos){
         printf("erro pra alocar na leitura dos registros de alunos\n");
         fclose(f);
