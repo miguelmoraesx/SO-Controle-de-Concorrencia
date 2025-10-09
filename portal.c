@@ -1,6 +1,6 @@
-#include <stdio.h>
-#include <unistd.h>
 #include "portal.h"
+
+Portal portal;
 
 int portal_init(Portal *p, RegistroAluno *alunos, int qtd, Logger *lg){
     if (!p || !alunos || qtd <= 0) return 0;

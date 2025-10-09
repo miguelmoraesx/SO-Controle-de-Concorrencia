@@ -3,6 +3,9 @@
 
 #include <pthread.h>
 #include <semaphore.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
 #include "logger.h"
 
 /* Registro do aluno */
