@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "logger.h"
-#include "input_output.h"
-#include "thread_operacoes.h"
+#include "util/logger.h"
+#include "util/input_output.h"
+#include "util/thread_operacoes.h"
+#include "portais/portal.h"
 
 //isso pega a variavel global de input_output, na funcao entradaDados
 extern int QNT_THREADS;

@@ -4,7 +4,7 @@
 #include <pthread.h>
 #include <assert.h>
 #include <stdlib.h>
-#include "portal.h"
+#include "../portais/portal.h"
 
 typedef struct {
     Portal *portal;

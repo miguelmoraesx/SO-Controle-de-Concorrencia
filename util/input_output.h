@@ -5,7 +5,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "portal.h"
+#include "../portais/portal.h"
 #include "logger.h"
 
 #define TECLADO "TECLADO"

@@ -1,7 +1,7 @@
 .PHONY: compile p1_arquivo help
 
 compile:
-	gcc portal.c logger.c input_output.c thread_operacoes.c main.c -o main -pthread
+	gcc portais/portal.c util/logger.c util/input_output.c util/thread_operacoes.c main.c -o main -pthread
 
 FILE ?= dados.txt
 THREADS ?= 4

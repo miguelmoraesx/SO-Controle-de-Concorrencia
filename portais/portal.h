@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include "logger.h"
+#include "../util/logger.h"
 
 /* Registro do aluno */
 typedef struct {
