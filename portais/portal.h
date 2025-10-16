@@ -23,6 +23,11 @@ typedef struct {
     // Controle dos leitores
     int leitores_ativos;
     pthread_mutex_t mtx_leitores;
+    
+    //controle dos escritores esperando
+    int writers_waiting;
+    pthread_mutex_t mtx_writers;
+
 
     // Semáforos do padrão "writers-first"
     sem_t turnstile;   // catraca: escritor segura para impedir novos leitores

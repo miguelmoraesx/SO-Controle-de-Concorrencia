@@ -5,7 +5,7 @@
 #include "util/input_output.h"
 #include "util/thread_operacoes.h"
 #include "portais/portal.h"
-#include "buffers/buffer.c"
+//#include "buffers/buffer.c"
 
 //isso pega a variavel global de input_output, na funcao entradaDados
 extern int QNT_THREADS;
@@ -13,7 +13,7 @@ extern Portal portal;
 
 
 int main(int argc, char** argv){
-
+    srand((unsigned int)time(NULL));
     DadosLidos* dadosLidos = entradaDados(argc,argv, &portal);
 
     int num_escritores = QNT_THREADS/2;

@@ -24,6 +24,7 @@ void logger_log(Logger *lg, const char *fmt, ...){
     va_start(ap, fmt);
     vprintf(fmt, ap);
     printf("\n");
+    fflush(stdout);
     va_end(ap);
     pthread_mutex_unlock(&lg->lock);
 }
