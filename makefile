@@ -6,9 +6,9 @@ THREADS ?= 4
 all: compile
 
 compile:
-	gcc portais/portal_V1.c util/logger.c util/input_output.c util/thread_operacoes.c main.c -o main_V1 -pthread
-	gcc portais/portal_V2.c util/logger.c util/input_output.c util/thread_operacoes.c main.c -o main_V2 -pthread
-	gcc portais/portal_V3.c util/logger.c util/input_output.c util/thread_operacoes.c main.c -o main_V3 -pthread
+	gcc portais/portal_V1.c buffers/buffer_V1.c util/logger.c util/input_output.c util/thread_operacoes.c main.c -o main_V1 -pthread
+	gcc portais/portal_V2.c buffers/buffer_V2.c util/logger.c util/input_output.c util/thread_operacoes.c main.c -o main_V2 -pthread
+	gcc portais/portal_V3.c buffers/buffer_V1.c util/logger.c util/input_output.c util/thread_operacoes.c main.c -o main_V3 -pthread
 
 # Execuções por versão e tipo de entrada
 v1_arquivo: main_V1

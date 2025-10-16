@@ -1,11 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <semaphore.h>
-#include <time.h>
-
-#define TAM_BUFFER 8
+#include "buffer.h"
 
 // buffer circular e posições
 int buffer[TAM_BUFFER];
@@ -64,6 +57,7 @@ void* consumidor(void* arg) {
     }
 }
 
+/** muda a main para ficar no arquivo main.c depois */
 int main(int argc, char** argv) {
     int produtores = 3, consumidores = 2;
     if (argc >= 2) produtores  = atoi(argv[1]);

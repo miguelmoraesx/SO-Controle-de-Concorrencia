@@ -1,11 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <semaphore.h>
-#include <time.h>
-
-#define TAM_BUFFER 5
+#include "buffer.h"
 
 // buffer circular
 int buffer[TAM_BUFFER];
@@ -63,6 +56,8 @@ void* consumidor(void* arg) {
         usleep((rand()%500 + 200) * 1000);
     }
 }
+
+/** muda a main para ficar no arquivo main.c depois */
 
 int main(int argc, char** argv) {
     int produtores = 3; // padrão
