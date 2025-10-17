@@ -38,7 +38,7 @@ int main(int argc, char** argv){
 
     if (strcmp(modo, "portal") == 0) {
         srand((unsigned int)time(NULL));
-        DadosLidos* dadosLidos = entradaDados(novo_argc, novo_argv, &portal);
+        DadosLidos* dadosLidos = entradaDados(argc, argv, &portal);
 
         int num_escritores = QNT_THREADS/2;
         int num_leitores = QNT_THREADS - num_escritores;

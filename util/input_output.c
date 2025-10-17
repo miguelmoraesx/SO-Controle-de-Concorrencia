@@ -22,26 +22,63 @@ void alocarAlunos(DadosLidos *dados, int qnt, Logger logger){
     }
 }
 
-DadosLidos* entradaDados(int argc,char** argv, Portal *portal){
+DadosLidos* entradaDados(int argc, char** argv, Portal *portal) {
     logger_init(&logger);
     logger_log(&logger, "Iniciando execucao...");
-    DadosLidos *dados;
-    if (argc < 3) {
-        //caso de erro nos argumentos
-        printf("Uso: %s [TECLADO|ARQUIVO|ALEATORIO] QNT_THREADS\n", argv[0]);
+
+    if (argc < 4) {
+        printf("Uso esperado: %s portal [TECLADO|ALEATORIO] QNT_THREADS\n", argv[0]);
+        printf("Uso esperado: %s portal ARQUIVO [ARQUIVO_DADOS] QNT_THREADS\n", argv[0]);
+        logger_log(&logger, "[ERRO] Argumentos insuficientes.");
         exit(1);
     }
 
-    if(!strcmp(argv[ENTRADA],TECLADO)){
-        printf("ENTRADA VIA TECLADO ESCOLHIDO\n");
-        entradaTeclado();
-    }else if(!strcmp(argv[ENTRADA], ARQUIVO)){
-        printf("ENTRADA VIA ARQUIVO ESCOLHIDO\n");
-        validaArquivo(argv[2]);
+    char* tipo_entrada = argv[2];
 
-        //instancia dados para a entrada via arquivo
-        dados = entradaArquivo(argv[2]);
-        logger_log(&logger, "\n--- Alunos carregados do arquivo (%d) ---", dados->qtd_alunos);
+    if (!strcmp(tipo_entrada, TECLADO) || !strcmp(tipo_entrada, ALEATORIO)) {
+        POS_THREADS = 3; 
+    } else if (!strcmp(tipo_entrada, ARQUIVO)) {
+        POS_THREADS = 4;
+    } else {
+        printf("NENHUMA ENTRADA VALIDA ESCOLHIDA!\n");
+        exit(1);
+    }
+
+    // Verifica se QNT_THREADS foi passado
+    if (argc <= POS_THREADS) {
+        logger_log(&logger, "[ERRO] Argumento QNT_THREADS ausente ou invalido.");
+        exit(1);
+    }
+
+    QNT_THREADS = atoi(argv[POS_THREADS]);
+    if (QNT_THREADS <= 0) {
+        logger_log(&logger, "[ERRO] QNT_THREADS deve ser um numero inteiro maior que zero.");
+        exit(1);
+    }
+
+    DadosLidos *dados = NULL;
+
+    if (!strcmp(tipo_entrada, TECLADO)) {
+        dados = entradaTeclado();
+    } else if (!strcmp(tipo_entrada, ARQUIVO)) {
+        if (argc < 5) {
+            logger_log(&logger, "[ERRO] Nome do arquivo ausente.");
+            exit(1);
+        }
+        validaArquivo(argv[3]);
+        dados = entradaArquivo(argv[3]);
+    } else if (!strcmp(tipo_entrada, ALEATORIO)) {
+        dados = entradaAleatoria();
+    }
+
+    if (dados == NULL) {
+        logger_log(&logger, "[ERRO] Falha critica na alocacao/leitura de dados.");
+        logger_close(&logger);
+        exit(1);
+    }
+
+    logger_log(&logger, "\n--- Alunos carregados (%d) ---", dados->qtd_alunos);
+    if (dados->alunos) {
         for(int i=0;i<dados->qtd_alunos;i++){
             logger_log(&logger, 
                        "Aluno [%d]: ID=%d | Nota=%.2f | Faltas=%d", 
@@ -50,37 +87,54 @@ DadosLidos* entradaDados(int argc,char** argv, Portal *portal){
                        dados->alunos[i].nota, 
                        dados->alunos[i].faltas);
         }
-        logger_log(&logger, "------------------------------------------");
-        if(portal_init(portal, dados->alunos, dados->qtd_alunos, &logger)){
-            logger_log(&logger, "[Portal] Portal iniciado com sucesso!");
-        }else{
-            logger_log(&logger, "[Erro] Falha ao iniciar o portal!");
-            free(dados->alunos);
-            free(dados);
-            logger_close(&logger);
-            exit(1);
-        }
-        POS_THREADS++;
-    }else if(!strcmp(argv[ENTRADA], ALEATORIO)){
-        printf("ENTRADA ALEATORIA ESCOLHIDA\n");
-        entradaAleatoria();
-    }else{
-        //nenhuma entrada previsto foi escolhido
-        printf("NENHUMA ENTRADA VALIDA ESCOLHIDA!\n");
+    }
+    logger_log(&logger, "------------------------------------------");
+
+    if(portal_init(portal, dados->alunos, dados->qtd_alunos, &logger)){
+        logger_log(&logger, "[Portal] Portal iniciado com sucesso!");
+    } else {
+        logger_log(&logger, "[Erro] Falha ao iniciar o portal!");
+        if (dados->alunos) free(dados->alunos);
+        free(dados);
+        logger_close(&logger);
         exit(1);
     }
-    QNT_THREADS = atoi(argv[POS_THREADS]);
-    if (QNT_THREADS <= 0) {
-        logger_log(&logger, "[ERRO] QNT_THREADS deve ser maior que zero.");
-        exit(1);
-    }
+
     return dados;
 }
 
 DadosLidos* entradaTeclado(){
-    //TAD AQUI
-    //scanf()
-    return NULL;
+    DadosLidos *dados = malloc(sizeof(DadosLidos));
+    if (!dados) {
+        printf("ERRO AO ALOCAR MEMORIA PARA DADOS TECLADO\n");
+        exit(1);
+    }
+
+    printf("Quantos alunos deseja cadastrar? ");
+    // Lê a quantidade e verifica se é válida
+    if (scanf("%d", &dados->qtd_alunos) != 1 || dados->qtd_alunos <= 0) {
+        printf("Quantidade de alunos inválida. Deve ser maior que zero.\n");
+        free(dados);
+        exit(1);
+    }
+    
+    // Aloca a memória para o array de alunos
+    alocarAlunos(dados, dados->qtd_alunos, logger); 
+    
+    for (int i = 0; i < dados->qtd_alunos; i++) {
+        printf("Aluno %d (ID, Nota, Faltas): ", i + 1);
+        if (scanf("%d %f %d", &dados->alunos[i].id_aluno,
+                             &dados->alunos[i].nota,
+                             &dados->alunos[i].faltas) != 3) {
+            printf("Erro ao ler dados do aluno %d\n", i + 1);
+            free(dados->alunos);
+            free(dados);
+            exit(1);
+        }
+    }
+
+    printf("Alunos lidos: %d\n", dados->qtd_alunos);
+    return dados;
 }
 
 DadosLidos* entradaArquivo(const char* local){
@@ -163,9 +217,27 @@ DadosLidos* entradaArquivo(const char* local){
 }
 
 DadosLidos* entradaAleatoria(){
+    DadosLidos *dados = malloc(sizeof(DadosLidos));
+    if (!dados) {
+        printf("ERRO AO ALOCAR MEMORIA PARA DADOS ALEATORIOS\n");
+        exit(1);
+    }
+
     srand(time(NULL));
-    //gera aleatorioamente pra passar pro TAD
-    return NULL;
+    int qtd = 10; // Valor fixo para teste
+    dados->qtd_alunos = qtd;
+
+    alocarAlunos(dados, qtd, logger);
+
+    for (int i = 0; i < qtd; i++) {
+        dados->alunos[i].id_aluno = i + 1;
+        // Gera nota de 0.0 a 10.0 com 1 casa decimal
+        dados->alunos[i].nota = ((float)(rand() % 101)) / 10.0; 
+        dados->alunos[i].faltas = rand() % 6; // 0 a 5 faltas
+    }
+
+    printf("Alunos gerados aleatoriamente: %d\n", qtd);
+    return dados;
 }
 
 void validaArquivo(const char* local){
