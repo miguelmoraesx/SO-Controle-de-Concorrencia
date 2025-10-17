@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "logger.h"
-#include "input_output.h"
-#include "thread_operacoes.h"
-#include "portal.h"
-//#include "buffers/buffer.c"
+#include "util/logger.h"
+#include "util/input_output.h"
+#include "util/thread_operacoes.h"
+#include "portais/portal.h"
+#include "buffers/buffer.h"
 
 // Protótipos das funções dos buffers que serão chamadas
 int executar_buffer_v1(int argc, char** argv);
