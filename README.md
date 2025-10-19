@@ -1,6 +1,6 @@
-# 🧩 Controle de Concorrência em Sistemas Operacionais
+# 🧩 Portal do Aluno — Controle de Concorrência em Sistemas Operacionais
 
-Projeto desenvolvido para a disciplina de **Sistemas Operacionais (UFAM)**, abordando os **problemas clássicos de concorrência** — Leitores e Escritores, e Produtor e Consumidor — utilizando **Threads**, **Semáforos** e **Mutex** em linguagem **C**.
+Projeto desenvolvido para a disciplina de **Sistemas Operacionais (UFAM)**, com o objetivo de implementar o **problema clássico dos Leitores e Escritores**, aplicado em um cenário realista chamado **Portal do Aluno**.
 
 ---
 
@@ -12,21 +12,18 @@ Projeto desenvolvido para a disciplina de **Sistemas Operacionais (UFAM)**, abor
 
 ---
 
-## 🧵 Descrição
+## 🎯 Objetivo do Projeto
 
-O trabalho tem como objetivo **simular a sincronização de processos concorrentes**, garantindo a integridade do acesso a recursos compartilhados.
+O trabalho simula o funcionamento de um **Portal do Aluno**, onde várias threads (usuários) podem:
+- **Ler informações** dos alunos (como notas e faltas);  
+- **Escrever informações** (atualizar notas ou faltas);  
 
-O projeto é dividido em **duas partes principais**:
-
-### 🧩 Parte 1 — Leitores e Escritores
-Implementa o controle de acesso onde múltiplos leitores podem ler simultaneamente, mas apenas **um escritor** pode modificar o recurso por vez.  
-O sistema utiliza **mutex** e **semaforos** para coordenar o acesso e evitar condições de corrida.
-
-### ⚙️ Parte 2 — Buffer Circular (Produtor e Consumidor)
-Simula a comunicação entre **produtores** (que inserem dados no buffer) e **consumidores** (que retiram dados).  
-O controle de concorrência garante que o buffer nunca fique **cheio** ou **vazio**, respeitando as restrições de sincronização.
+O desafio é garantir que:
+- Vários **leitores** possam acessar o portal **simultaneamente**,  
+- Mas apenas **um escritor** (professor) possa alterar os dados **por vez**,  
+evitando conflitos e mantendo a integridade das informações.
 
 ---
 
-## 🧰 Estrutura de Pastas
+## ⚙️ Estrutura do Projeto
 
